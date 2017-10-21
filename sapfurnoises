@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+trap 'jobs -p | xargs -r kill' SIGINT SIGTERM EXIT
+((play -n -c1 synth whitenoise lowpass -1 100 lowpass -1 200 lowpass -1 100 vol +18Db synth sine amod 0.05 20)&>/dev/null)&
+sleep 8.8
+./onfire &
+((play -n -n --combine merge synth pinknoise band -n 1200 1800 tremolo 50 10 tremolo 0.14 70 tremolo 0.2 50)&>/dev/null)&
+sleep 7
+festival --tts ./poe
+sleep 7
+((cat /dev/urandom | hexdump -v -e '/1 "%u\n"' | \
+    awk '{ split("-10000,-10000,0,2,3,5,7,8,10,12", a,","); for (i = 0; i < 1; i+= 0.0001-0.00005) printf("%08X\n", 21*sin(1382*exp((a[$1 % 10]/12)*log(2))*i)) }' | \
+    xxd -r -p | aplay -c 2 -f S32_LE -r 16000)&>/dev/null) | \
+((cat /dev/urandom | hexdump -v -e '/1 "%u\n"' | \
+    awk '{ split("-10000,0,3,7,10", a,","); for (i = 0; i < 1; i+= 0.0001-0.00005) printf("%08X\n", 21*sin(1382*exp((a[$1 % 5]/12)*log(2))*i)) }' | \
+    xxd -r -p | aplay -c 2 -f S32_LE -r 16000)&>/dev/null)
